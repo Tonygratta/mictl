@@ -10,11 +10,19 @@ DEF_USERNAME = 'admin'
 DEF_ROUTERNAME = '192.168.1.250' # Router hostname or IP address for connecting to. Will be using 'router.lan' for DNS setting in case of IP.
 DEF_PORT = '22'
 
+print ("Input router IP/len (default is " + DEF_INTERFACE + ")")
+REQ_INTERFACE = input ()
+if REQ_INTERFACE:
+    DEF_INTERFACE = REQ_INTERFACE
+
 INT_NET_OBJECT = ipaddress.IPv4Interface(DEF_INTERFACE)
+DHCP_START_OBJECT = INT_NET_OBJECT.ip + DHCP_S
+DHCP_END_OBJECT = INT_NET_OBJECT.ip + DHCP_E
 NETWORK = str (INT_NET_OBJECT.network)
 ROUTER = str (INT_NET_OBJECT.ip)
-DHCP_START = str (INT_NET_OBJECT.ip + DHCP_S)
-DHCP_END = str (INT_NET_OBJECT.ip + DHCP_E)
+DHCP_START = str (DHCP_START_OBJECT)
+DHCP_END = str (DHCP_END_OBJECT)
+rtr_prefixlen = INT_NET_OBJECT.network.prefixlen
 
 print ("***")
 print ("INTERFACE = " + DEF_INTERFACE)
@@ -23,6 +31,15 @@ print ("ROUTER = " + ROUTER)
 print ("DHCP_START = " + DHCP_START)
 print ("DHCP_END = " + DHCP_END)
 print ("***")
+
+# Checking if the DHCP addresses in the same net as router
+if DHCP_START_OBJECT not in INT_NET_OBJECT.network.hosts()  or \
+   DHCP_END_OBJECT not in INT_NET_OBJECT.network.hosts():
+    print ("ERROR: DHCP addresses not in the same net as router. Do you really WANT to write this? (yes/no)")
+    if input().lower() != 'yes':
+        exit()
+
+
 print ("Input password for " + DEF_USERNAME)
 PASSWORD = input()
 
