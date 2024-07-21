@@ -7,7 +7,7 @@ DEF_INTERFACE = '192.168.1.250/24' # Router interface in IP.AD.DR.ESS/prefixlen 
 DHCP_S = -10 # DHCP start range IP address shifting from outer interface 
 DHCP_E = -1 # DHCP end range IP address shifting from outer interface 
 DEF_USERNAME = 'admin'
-DEF_ROUTERNAME = '192.168.1.250' # Router hostname or IP address for connecting to. Will be using 'router.lan' for DNS setting in case of IP.
+DEF_ROUTERNAME = 'router.lan' # Router hostname or IP address for connecting to. Will be using 'router.lan' for DNS setting in case of IP.
 DEF_PORT = '22'
 
 print ("Input router IP/len (default is " + DEF_INTERFACE + ")")
