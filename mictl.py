@@ -1,4 +1,6 @@
 import ipaddress
+from os import path
+from os import mkdir
 from netmiko import ConnectHandler
 
 DEF_INTERFACE = '192.168.1.250/24' # Router interface in IP.AD.DR.ESS/prefixlen format
@@ -25,13 +27,17 @@ print ("Input password for " + DEF_USERNAME)
 PASSWORD = input()
 
 
+logspath = path.join(path.dirname(__file__), "logs")
+if not path.exists(logspath):
+    mkdir (logspath)
+
 mikrotik_router_1 = {
 'device_type': 'mikrotik_routeros',
 'host': DEF_ROUTERNAME,
 'port': DEF_PORT,
 'username': DEF_USERNAME,
 'password': PASSWORD,
-'session_log': 'logs/netmiko_session.log'
+'session_log': path.join(logspath, "netmiko_session.log")
 }
 
 with ConnectHandler(**mikrotik_router_1) as sshCli:
@@ -40,7 +46,7 @@ with ConnectHandler(**mikrotik_router_1) as sshCli:
     print(prompt)
 
 ##    print ("Reading config...")
-##    with open("logs/Config-initial.txt", "w") as config_file:
+##    with open(path.join(logspath, "config-initial.txt"), "w") as config_file:
 ###        config_file.write(sshCli.send_command("/export", expect_string = '\n\n\n', read_timeout = 60.0))
 ##        config_file.write(sshCli.send_command_timing("/export", last_read = 10.0))
 ##    print ("Init config retrieved")
@@ -87,7 +93,7 @@ with ConnectHandler(**mikrotik_router_1) as sshCli:
     #print (sshCli.send_command("/interface print", expect_string = '\n\n\n'))
 
 ##    print ("Reading config...")
-##    with open("logs/Config-final.txt", "w") as config_file:
+##    with open(path.join(logspath, "config-final.txt"), "w") as config_file:
 ##        config_file.write(sshCli.send_command_timing("/export", last_read = 10.0))
 ##    print ("Final config retrieved")
 ##    print ("Exit")
