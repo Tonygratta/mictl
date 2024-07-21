@@ -1,0 +1,9 @@
+установить dhcp network gateway
+/ip dhcp-server network set address=192.168.1.0/24 netmask=24 gateway=192.168.1.250 dns-server=192.168.1.250 0
+установить dhcp pool
+/ip dhcp-server set address-pool=dhcp 0
+/ip pool set dhcp ranges=192.168.1.220-192.168.1.248
+установить адрес роутера
+/ip address set address=192.168.1.250/24 interface=bridge 0
+установить DNS
+/ip dns static set name=router.lan address=192.168.1.250 0
