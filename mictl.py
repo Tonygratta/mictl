@@ -22,7 +22,6 @@ NETWORK = str (INT_NET_OBJECT.network)
 ROUTER = str (INT_NET_OBJECT.ip)
 DHCP_START = str (DHCP_START_OBJECT)
 DHCP_END = str (DHCP_END_OBJECT)
-rtr_prefixlen = INT_NET_OBJECT.network.prefixlen
 
 print ("***")
 print ("INTERFACE = " + DEF_INTERFACE)
@@ -39,10 +38,8 @@ if DHCP_START_OBJECT not in INT_NET_OBJECT.network.hosts()  or \
     if input().lower() != 'yes':
         exit()
 
-
 print ("Input password for " + DEF_USERNAME)
 PASSWORD = input()
-
 
 logspath = path.join(path.dirname(__file__), "logs")
 if not path.exists(logspath):
@@ -57,57 +54,35 @@ mikrotik_router_1 = {
 'session_log': path.join(logspath, "netmiko_session.log")
 }
 
+try:
+    ipaddress.ip_address(DEF_ROUTERNAME)
+    print ("WARNING: IP address is defined instead of hostname. Name 'router.lan' will be using.")
+    dnsname = 'router.lan'
+except ValueError:
+    dnsname = DEF_ROUTERNAME
+
 with ConnectHandler(**mikrotik_router_1) as sshCli:
     
     prompt = sshCli.find_prompt()
     print(prompt)
+
+    # Generating command set - (Title, command, number of attempts)
+    commands = (("Setting pool name...","/ip dhcp-server set address-pool=dhcp 0",2),
+                ("Setting pool params...","/ip pool set dhcp ranges=" + DHCP_START + "-" + DHCP_END,2),
+                ("Setting DHCP-Server...","/ip dhcp-server network set address=" + NETWORK + " netmask=0 gateway=" + ROUTER + " dns-server=" + ROUTER + " 0",2),
+                ("Setting DNS...","/ip dns static set name=" + dnsname + " address=" + ROUTER + " 0",2),
+                ("Setting router address...","/ip address set interface=bridge address=" + DEF_INTERFACE + " 0",1))
 
 ##    print ("Reading config...")
 ##    with open(path.join(logspath, "config-initial.txt"), "w") as config_file:
 ###        config_file.write(sshCli.send_command("/export", expect_string = '\n\n\n', read_timeout = 60.0))
 ##        config_file.write(sshCli.send_command_timing("/export", last_read = 10.0))
 ##    print ("Init config retrieved")
-    
-    #Setting dhcp pool parameters
-    #/ip dhcp-server set address-pool=dhcp 0
-    #/ip pool set dhcp ranges=192.168.1.220-192.168.1.248
-    print ("Setting pool...")
-    sshCli.send_command("/ip dhcp-server set address-pool=dhcp 0")
-    command = "/ip pool set dhcp ranges=" + DHCP_START + "-" + DHCP_END
-    sshCli.send_command(command)
-    print ("Done.")
 
-    #Setting dhcp network parameters
-    #/ip dhcp-server network set address=192.168.1.0/24 netmask=0 (маска берётся от интерфейса) gateway=192.168.1.250 dns-server=192.168.1.250 0
-    print ("Setting DHCP-Server...")
-    command = "/ip dhcp-server network set address=" + NETWORK + " netmask=0 gateway=" + ROUTER + " dns-server=" + ROUTER + " 0"
-    sshCli.send_command(command)
-    print ("Done.")    
-
-    #Setting DNS static record for further connecting to router using static hostname
-    #/ip dns static set name=router.lan address=192.168.1.250 0
-    print ("Setting DNS...")
-    
-    try:
-        ipaddress.ip_address(DEF_ROUTERNAME)
-        print ("WARNING: IP address is defined instead of hostname. Name 'router.lan' will be using.")
-        command = "/ip dns static set name=" + "router.lan" + " address=" + ROUTER + " 0"
-        sshCli.send_command(command)
-
-    except ValueError:
-        command = "/ip dns static set name=" + DEF_ROUTERNAME + " address=" + ROUTER + " 0"
-        sshCli.send_command(command)
-
-    print ("Done.")
-
-    #Setting Router IP address
-    #/ip address set address=192.168.1.250/24 interface=bridge 0
-    print ("Setting Address...")
-    command = "/ip address set interface=bridge address=" + DEF_INTERFACE + " 0"
-    sshCli.send_command(command)
-    print ("Done.")
-
-    #print (sshCli.send_command("/interface print", expect_string = '\n\n\n'))
+    for command in commands:
+        print (command[0])
+        if not sshCli.send_command(command[1]):
+            print ("Done.")
 
 ##    print ("Reading config...")
 ##    with open(path.join(logspath, "config-final.txt"), "w") as config_file:

@@ -18,3 +18,7 @@
   - /ip dns static set name=router.lan address=192.168.1.250 0
 - Устанавливает адрес роутера
   - /ip address set address=192.168.1.250/24 interface=bridge 0
+  
+ ### Известные проблемы
+ 
+ - Подвержена проблеме https:/github.com/ktbyers/netmiko/issues/3405
