@@ -2,6 +2,7 @@ import ipaddress
 from os import path
 from os import mkdir
 from netmiko import ConnectHandler
+import re
 
 DEF_INTERFACE = '192.168.1.250/24' # Router interface in IP.AD.DR.ESS/prefixlen format
 DHCP_S = -10 # DHCP start range IP address shifting from outer interface 
@@ -78,7 +79,7 @@ with ConnectHandler(**mikrotik_router_1) as sshCli:
     if DEF_READINITCONF:
         print ("Reading config...")
         with open(path.join(logspath, "config-initial.txt"), "w") as config_file:
-            config_file.write(sshCli.send_command("/export", expect_string = prompt + r'[ \t]*$', read_timeout = 90.0))
+            config_file.write(sshCli.send_command("/export", expect_string = re.escape(prompt) + r"[ \t]*$", read_timeout = 90.0))
         print ("Init config retrieved")
     
     for command in commands:
@@ -89,7 +90,7 @@ with ConnectHandler(**mikrotik_router_1) as sshCli:
     if DEF_READRESULTCONF:
         print ("Reading config...")
         with open(path.join(logspath, "config-final.txt"), "w") as config_file:
-            config_file.write(sshCli.send_command("/export", expect_string = prompt + r'[ \t]*$', read_timeout = 90.0))
+            config_file.write(sshCli.send_command("/export", expect_string = re.escape(prompt) + r"[ \t]*$", read_timeout = 90.0))
         print ("Final config retrieved")
 
     print ("Exit")
