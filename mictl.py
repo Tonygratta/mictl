@@ -9,6 +9,8 @@ DHCP_E = -1 # DHCP end range IP address shifting from outer interface
 DEF_USERNAME = 'admin'
 DEF_ROUTERNAME = 'router.lan' # Router hostname or IP address for connecting to. Will be using 'router.lan' for DNS setting in case of IP.
 DEF_PORT = '22'
+DEF_READINITCONF = True
+DEF_READRESULTCONF = True
 
 print ("Input router IP/len (default is " + DEF_INTERFACE + ")")
 REQ_INTERFACE = input ()
@@ -62,11 +64,11 @@ with ConnectHandler(**mikrotik_router_1) as sshCli:
     prompt = sshCli.find_prompt()
     print(prompt)
 
-##    print ("Reading config...")
-##    with open(path.join(logspath, "config-initial.txt"), "w") as config_file:
-###        config_file.write(sshCli.send_command("/export", expect_string = '\n\n\n', read_timeout = 60.0))
-##        config_file.write(sshCli.send_command_timing("/export", last_read = 10.0))
-##    print ("Init config retrieved")
+    if DEF_READINITCONF:
+        print ("Reading config...")
+        with open(path.join(logspath, "config-initial.txt"), "w") as config_file:
+            config_file.write(sshCli.send_command("/export", expect_string = prompt + '[ \t]*$', read_timeout = 90.0))
+        print ("Init config retrieved")
     
     #Setting dhcp pool parameters
     #/ip dhcp-server set address-pool=dhcp 0
@@ -109,8 +111,10 @@ with ConnectHandler(**mikrotik_router_1) as sshCli:
 
     #print (sshCli.send_command("/interface print", expect_string = '\n\n\n'))
 
-##    print ("Reading config...")
-##    with open(path.join(logspath, "config-final.txt"), "w") as config_file:
-##        config_file.write(sshCli.send_command_timing("/export", last_read = 10.0))
-##    print ("Final config retrieved")
-##    print ("Exit")
+    if DEF_READRESULTCONF:
+        print ("Reading config...")
+        with open(path.join(logspath, "config-final.txt"), "w") as config_file:
+            config_file.write(sshCli.send_command("/export", expect_string = prompt + '[ \t]*$', read_timeout = 90.0))
+        print ("Final config retrieved")
+
+    print ("Exit")
